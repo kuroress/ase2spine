@@ -15,9 +15,14 @@ def ase_file():
     return AsepriteFile(ase_path)
 
 
+@pytest.fixture
+def images(ase_file):
+    return ase_file.images('Tag')
+
+
 def test_aseprite_file_images(ase_file):
-    images = ase_file.images()
-    assert [i.name() for i in images] == ['GGG-bbb', 'GGG-ccc', '-aaa']
+    images = ase_file.images('Tag')
+    assert [i.name() for i in images] == ['Tag-GGG-bbb', 'Tag-GGG-ccc', 'Tag--aaa']
     assert_equal(images[2].data[:, :, 3],
                  [[0, 0, 0, 0],
                   [0, 255, 255, 0],
@@ -35,8 +40,8 @@ def test_aseprite_file_images(ase_file):
                   [0, 0, 255, 0]])
 
 
-def test_aseprite_file_trim(ase_file):
-    image = ase_file.images()[0]
+def test_aseprite_file_trim(images):
+    image = images[0]
     trimmed = image.trim()
     assert image.bbox() == (0, 0, 3, 4)
     assert trimmed.name() == image.name()
@@ -44,21 +49,21 @@ def test_aseprite_file_trim(ase_file):
                  image.data[:, :3, 3])
 
 
-def test_spine_skeleton_to_png(ase_file):
+def test_spine_skeleton_to_png(images):
     with tempfile.TemporaryDirectory() as dir_name:
-        sk = SpineSkeleton(ase_file.images(), dir_name)
+        sk = SpineSkeleton(images, dir_name)
         sk.to_png()
 
         images = [imageio.imread(os.path.join(dir_name, im.name() + '.png'))
-                  for im in ase_file.images()]
+                  for im in images]
         assert images[0].shape == (4, 3, 4)
         assert images[1].shape == (2, 2, 4)
         assert images[2].shape == (2, 2, 4)
 
 
-def test_spine_skeleton_to_json(ase_file):
+def test_spine_skeleton_to_json(images):
     with tempfile.TemporaryDirectory() as dir_name:
-        sk = SpineSkeleton(ase_file.images(), dir_name)
+        sk = SpineSkeleton(images, dir_name)
         sk.to_json()
         with open(os.path.join(dir_name, 'skeleton.json'), 'r') as f:
             assert json.load(f) == {
@@ -72,41 +77,41 @@ def test_spine_skeleton_to_json(ase_file):
                 ],
                 "slots": [
                     {
-                        "name": "GGG-bbb",
+                        "name": "Tag-GGG-bbb",
                         "bone": "root",
-                        "attachment": "GGG-bbb"
+                        "attachment": "Tag-GGG-bbb"
                     },
                     {
-                        "name": "GGG-ccc",
+                        "name": "Tag-GGG-ccc",
                         "bone": "root",
-                        "attachment": "GGG-ccc"
+                        "attachment": "Tag-GGG-ccc"
                     },
                     {
-                        "name": "-aaa",
+                        "name": "Tag--aaa",
                         "bone": "root",
-                        "attachment": "-aaa"
+                        "attachment": "Tag--aaa"
                     }
                 ],
                 "skins": {
                     "default": {
-                        "-aaa": {
-                            "-aaa": {
+                        "Tag--aaa": {
+                            "Tag--aaa": {
                                 "x": 2.0,
                                 "y": -2.0,
                                 "width": 2,
                                 "height": 2
                             }
                         },
-                        "GGG-ccc": {
-                            "GGG-ccc": {
+                        "Tag-GGG-ccc": {
+                            "Tag-GGG-ccc": {
                                 "x": 1.0,
                                 "y": -2.0,
                                 "width": 2,
                                 "height": 2
                             }
                         },
-                        "GGG-bbb": {
-                            "GGG-bbb": {
+                        "Tag-GGG-bbb": {
+                            "Tag-GGG-bbb": {
                                 "x": 1.5,
                                 "y": -2.0,
                                 "width": 3,

@@ -1,3 +1,4 @@
+import glob
 import json
 import sys
 
@@ -99,10 +100,11 @@ class AsepriteFile:
         self.file_path = file_path
 
     def layers(self):
-        with tempfile.TemporaryDirectory() as dirname:
-            layer_file = os.path.join(dirname, 'layers.txt')
+        with tempfile.TemporaryDirectory() as dir_name:
+            layer_file = os.path.join(dir_name, 'layers.txt')
             subprocess.call(['aseprite', '-b',
                              '--all-layers',
+                             '--ignore-empty',
                              '--list-layers', self.file_path,
                              '--data', layer_file],
                             stdout=subprocess.DEVNULL)
@@ -115,26 +117,27 @@ class AsepriteFile:
                           if 'opacity' in l]
                 return list(reversed(layers))
 
-    def images(self):
-        with tempfile.TemporaryDirectory() as dirname:
+    def images(self, tag):
+        with tempfile.TemporaryDirectory() as dir_name:
             subprocess.call([
                 'aseprite', '-b',
                 '--all-layers',
+                '--ignore-empty',
                 '--split-layers', self.file_path,
                 '--filename-format',
-                os.path.join(dirname, '{group}-{layer}.{extension}'),
+                os.path.join(dir_name, '{tag}-{group}-{layer}.{extension}'),
                 '--save-as', '.png'
             ])
-
-            return [NamedImage(os.path.join(dirname, layer + '.png'))
+            return [NamedImage(os.path.join(dir_name, tag + '-' + layer + '.png'))
                     for layer in self.layers()]
 
 
 if __name__ == '__main__':
     src = sys.argv[1]
-    dst = sys.argv[2]
+    tag = sys.argv[2]
+    dst = sys.argv[3]
 
     ase = AsepriteFile(src)
-    sk = SpineSkeleton(ase.images(), dst)
+    sk = SpineSkeleton(ase.images(tag), dst)
     sk.to_json()
     sk.to_png()
