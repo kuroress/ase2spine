@@ -88,13 +88,13 @@ class NamedImage:
         return new
 
     def bbox(self):
-        return Image.fromarray(self.data[:, :, :3]).getbbox()
+        return Image.fromarray(self.data[:, :, 3]).getbbox()
 
     def to_png(self, file_name):
         Image.fromarray(self.data).save(file_name + '.png')
 
     def empty(self):
-        return not self.data.any()
+        return not self.data[:, :, 3].any()
 
 
 class AsepriteFile:
