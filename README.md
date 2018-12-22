@@ -9,7 +9,7 @@ Script to export a aseprite file as set of png files and a json, to import to Sp
 ```
 python ase2spine.py <source ase file> <aseprite tag> <dist dir>
 ```
-4. Import a json in the <dist dir> to Spine.
+4. Import a json in the `<dist dir>` to Spine.
 
 ## Example
 ```bash
