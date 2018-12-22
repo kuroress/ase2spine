@@ -24,7 +24,7 @@ def images(ase_file):
 
 def test_aseprite_file_images(ase_file):
     images = ase_file.images('Tag')
-    assert [i.name() for i in images] == ['Tag-GGG-bbb', 'Tag-GGG-ccc', 'Tag--aaa']
+    assert [i.name() for i in images] == ['Tag-GGG-b b', 'Tag-GGG-ccc', 'Tag--aaa']
     assert_equal(images[2].data[:, :, 3],
                  [[0, 0, 0, 0],
                   [0, 255, 255, 0],
@@ -79,9 +79,9 @@ def test_spine_skeleton_to_json(images):
                 ],
                 "slots": [
                     {
-                        "name": "Tag-GGG-bbb",
+                        "name": "Tag-GGG-b b",
                         "bone": "root",
-                        "attachment": "Tag-GGG-bbb"
+                        "attachment": "Tag-GGG-b b"
                     },
                     {
                         "name": "Tag-GGG-ccc",
@@ -112,8 +112,8 @@ def test_spine_skeleton_to_json(images):
                                 "height": 2
                             }
                         },
-                        "Tag-GGG-bbb": {
-                            "Tag-GGG-bbb": {
+                        "Tag-GGG-b b": {
+                            "Tag-GGG-b b": {
                                 "x": 1.5,
                                 "y": -2.0,
                                 "width": 3,
