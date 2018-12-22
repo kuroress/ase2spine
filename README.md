@@ -3,6 +3,7 @@ Script to export a aseprite file as set of png files and a json, to import to Sp
 
 ## Usage
 1. Create a source ase file by aseprite.
+    * NOTE: Each layer name must not have hyphen '-'.
 2. Tag the single frame to export.
 3. Run,
 ```
