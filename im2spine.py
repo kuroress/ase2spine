@@ -1,28 +1,20 @@
-import sys
 import json
 
 import numpy as np
 import imageio
 from PIL import Image
 import copy
-import glob
 import os
 import subprocess
 import tempfile
 
 
 class SpineImage:
-    def __init__(self, file_name):
-        self.file_name = file_name
-
-    def tagname(self):
-        return self.basename().split("-", 1)[0]
-
-    def layername(self):
-        return self.basename().split("-", 1)[1]
+    def __init__(self, image):
+        self.image = image
 
     def basename(self):
-        return os.path.splitext(os.path.basename(self.file_name))[0]
+        return self.image.name()
 
     def to_slot(self):
         return {"name": self.basename(),
@@ -31,8 +23,7 @@ class SpineImage:
                 }
 
     def to_skin(self):
-        im = imageio.imread(self.file_name)
-        x1, y1, x2, y2 = Image.fromarray(im[:, :, :3]).getbbox()
+        x1, y1, x2, y2 = self.image.bbox()
         xc, yc = (x1 + x2) / 2, (y1 + y2) / 2
         return {
             self.basename(): {
@@ -43,37 +34,20 @@ class SpineImage:
             }
         }
 
-    def trim(self):
-        im = imageio.imread(self.file_name)
-        bbox = Image.fromarray(im[:, :, :3]).getbbox()
-        Image.open(self.file_name).crop(bbox).save(self.file_name)
-
 
 class SpineSkeleton:
-    def __init__(self):
-        pass
-
-
-class _SpineSkeleton:
     VERSION = "3.7.76-beta"
 
-    def __init__(self, im_dir):
-        self.im_dir = im_dir
+    def __init__(self, images, dir_name):
+        self._images = images
+        self.dir_name = dir_name
 
     def images(self):
-        images = [SpineImage(im_path) for im_path
-                  in glob.glob(os.path.join(self.im_dir, '*.png'))]
-        images = {im.layername(): im for im in images}
-        images = [images[l] for l in self.layers()]
-        return list(reversed(images))
-
-    def layers(self):
-        with open(os.path.join(self.im_dir, 'layers.txt'), 'r') as f:
-            return f.read().splitlines()
+        return [SpineImage(im) for im in self._images]
 
     def to_json(self):
         images = self.images()
-        return {
+        data = {
             "skeleton": {
                 "spine": SpineSkeleton.VERSION
             },
@@ -91,10 +65,12 @@ class _SpineSkeleton:
                 }
             }
         }
+        with open(os.path.join(self.dir_name, 'skeleton.json'), 'w') as f:
+            json.dump(data, f)
 
-    def trim_images(self):
-        for im in self.images():
-            im.trim()
+    def to_png(self):
+        for im in self._images:
+            im.trim().to_png(os.path.join(self.dir_name, im.name()))
 
 
 class NamedImage:
@@ -112,6 +88,9 @@ class NamedImage:
 
     def bbox(self):
         return Image.fromarray(self.data[:, :, :3]).getbbox()
+
+    def to_png(self, file_name):
+        Image.fromarray(self.data).save(file_name + '.png')
 
 
 class AsepriteFile:
@@ -146,12 +125,3 @@ class AsepriteFile:
 
             return [NamedImage(os.path.join(dirname, layer + '.png'))
                     for layer in self.layers()]
-
-
-if __name__ == '__main__':
-    im_dir = sys.argv[1]
-    json_name = f"{im_dir}/{os.path.basename(im_dir)}.json"
-    sk = _SpineSkeleton(im_dir)
-    with open(json_name, 'w') as f:
-        json.dump(sk.to_json(), f)
-    sk.trim_images()
