@@ -5,6 +5,8 @@ import imageio
 from PIL import Image
 import glob
 import os
+import subprocess
+import tempfile
 
 
 class SpineImage:
@@ -21,16 +23,15 @@ class SpineImage:
         return os.path.splitext(os.path.basename(self.file_name))[0]
 
     def to_slot(self):
-        return {
-            "name": self.basename(),
-            "bone": "root",
-            "attachment": self.basename()
-        }
+        return {"name": self.basename(),
+                "bone": "root",
+                "attachment": self.basename()
+                }
 
     def to_skin(self):
         im = imageio.imread(self.file_name)
         x1, y1, x2, y2 = Image.fromarray(im[:, :, :3]).getbbox()
-        xc, yc = (x1+x2)/2, (y1+y2)/2
+        xc, yc = (x1 + x2) / 2, (y1 + y2) / 2
         return {
             self.basename(): {
                 "x": xc,
@@ -87,6 +88,51 @@ class SpineSkeleton:
     def trim_images(self):
         for im in self.images():
             im.trim()
+
+
+class AsepriteFile:
+    def __init__(self, file_path, tmp_dir=None):
+        self.file_path = file_path
+
+    def layers(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            layer_file = os.path.join(dirname, 'layers.txt')
+            subprocess.call(['aseprite', '-b',
+                             '--list-layers', self.file_path,
+                             '--data', layer_file],
+                            stdout=subprocess.DEVNULL)
+            with open(layer_file, 'r') as f:
+                def _get_name(layer):
+                    return f"{layer.get('group', '')}-{layer['name']}"
+
+                layers = [_get_name(l)
+                          for l in json.load(f)['meta']['layers']
+                          if 'opacity' in l]
+                return list(reversed(layers))
+
+    def images(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            subprocess.call([
+                'aseprite', '-b',
+                '--split-layers', self.file_path,
+                '--filename-format',
+                os.path.join(dirname, '{group}-{layer}.{extension}'),
+                '--save-as', '.png'
+            ])
+
+            def _get_name(path):
+                return os.path.splitext(os.path.basename(path))[0]
+
+            images = {_get_name(path): imageio.imread(path) for path
+                      in glob.glob(os.path.join(dirname, '*.png'))}
+            return {l: images[l] for l in self.layers()}
+
+    def to_png(self, dir_name):
+        subprocess.call([
+            'aseprite', '-b',
+            '--split-layers', self.file_path,
+            '--filename-format', '"{}"'
+        ])
 
 
 if __name__ == '__main__':
