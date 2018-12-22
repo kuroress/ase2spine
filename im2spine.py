@@ -1,8 +1,10 @@
 import sys
 import json
 
+import numpy as np
 import imageio
 from PIL import Image
+import copy
 import glob
 import os
 import subprocess
@@ -48,6 +50,11 @@ class SpineImage:
 
 
 class SpineSkeleton:
+    def __init__(self):
+        pass
+
+
+class _SpineSkeleton:
     VERSION = "3.7.76-beta"
 
     def __init__(self, im_dir):
@@ -90,7 +97,7 @@ class SpineSkeleton:
             im.trim()
 
 
-class ImageFile:
+class NamedImage:
     def __init__(self, file_name):
         self.data = imageio.imread(file_name)
         self.file_name = file_name
@@ -98,9 +105,17 @@ class ImageFile:
     def name(self):
         return os.path.splitext(os.path.basename(self.file_name))[0]
 
+    def trim(self):
+        new = copy.copy(self)
+        new.data = np.asarray(Image.fromarray(self.data).crop(self.bbox()))
+        return new
+
+    def bbox(self):
+        return Image.fromarray(self.data[:, :, :3]).getbbox()
+
 
 class AsepriteFile:
-    def __init__(self, file_path, tmp_dir=None):
+    def __init__(self, file_path):
         self.file_path = file_path
 
     def layers(self):
@@ -129,14 +144,14 @@ class AsepriteFile:
                 '--save-as', '.png'
             ])
 
-            return [ImageFile(os.path.join(dirname, layer + '.png'))
+            return [NamedImage(os.path.join(dirname, layer + '.png'))
                     for layer in self.layers()]
 
 
 if __name__ == '__main__':
     im_dir = sys.argv[1]
     json_name = f"{im_dir}/{os.path.basename(im_dir)}.json"
-    sk = SpineSkeleton(im_dir)
+    sk = _SpineSkeleton(im_dir)
     with open(json_name, 'w') as f:
         json.dump(sk.to_json(), f)
     sk.trim_images()
