@@ -102,6 +102,7 @@ class AsepriteFile:
         with tempfile.TemporaryDirectory() as dirname:
             layer_file = os.path.join(dirname, 'layers.txt')
             subprocess.call(['aseprite', '-b',
+                             '--all-layers',
                              '--list-layers', self.file_path,
                              '--data', layer_file],
                             stdout=subprocess.DEVNULL)
@@ -118,6 +119,7 @@ class AsepriteFile:
         with tempfile.TemporaryDirectory() as dirname:
             subprocess.call([
                 'aseprite', '-b',
+                '--all-layers',
                 '--split-layers', self.file_path,
                 '--filename-format',
                 os.path.join(dirname, '{group}-{layer}.{extension}'),
