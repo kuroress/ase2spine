@@ -14,25 +14,21 @@ def ase_file():
     return AsepriteFile(ase_path)
 
 
-def test_aseprite_file_layers(ase_file):
-    assert ase_file.layers() == ['GGG-bbb', 'GGG-ccc', '-aaa']
-
-
 def test_aseprite_file_images(ase_file):
     images = ase_file.images()
-    assert list(images.keys()) == ['GGG-bbb', 'GGG-ccc', '-aaa']
-    assert_equal(images['-aaa'][:, :, 3],
-                 [[0, 0, 0, 0],
-                  [0, 255, 255, 0],
-                  [0, 255, 255, 0],
-                  [0, 0, 0, 0]])
-    assert_equal(images['GGG-ccc'][:, :, 3],
-                 [[0, 0, 0, 0],
-                  [255, 255, 0, 0],
-                  [255, 255, 0, 0],
-                  [0, 0, 0, 0]])
-    assert_equal(images['GGG-bbb'][:, :, 3],
+    assert [i.name() for i in images] == ['GGG-bbb', 'GGG-ccc', '-aaa']
+    assert_equal(images[0].data[:, :, 3],
                  [[255, 255, 0, 0],
                   [255, 255, 0, 0],
                   [0, 0, 0, 0],
                   [0, 0, 255, 0]])
+    assert_equal(images[1].data[:, :, 3],
+                 [[0, 0, 0, 0],
+                  [255, 255, 0, 0],
+                  [255, 255, 0, 0],
+                  [0, 0, 0, 0]])
+    assert_equal(images[2].data[:, :, 3],
+                 [[0, 0, 0, 0],
+                  [0, 255, 255, 0],
+                  [0, 255, 255, 0],
+                  [0, 0, 0, 0]])

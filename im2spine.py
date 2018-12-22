@@ -90,6 +90,15 @@ class SpineSkeleton:
             im.trim()
 
 
+class ImageFile:
+    def __init__(self, file_name):
+        self.data = imageio.imread(file_name)
+        self.file_name = file_name
+
+    def name(self):
+        return os.path.splitext(os.path.basename(self.file_name))[0]
+
+
 class AsepriteFile:
     def __init__(self, file_path, tmp_dir=None):
         self.file_path = file_path
@@ -120,19 +129,8 @@ class AsepriteFile:
                 '--save-as', '.png'
             ])
 
-            def _get_name(path):
-                return os.path.splitext(os.path.basename(path))[0]
-
-            images = {_get_name(path): imageio.imread(path) for path
-                      in glob.glob(os.path.join(dirname, '*.png'))}
-            return {l: images[l] for l in self.layers()}
-
-    def to_png(self, dir_name):
-        subprocess.call([
-            'aseprite', '-b',
-            '--split-layers', self.file_path,
-            '--filename-format', '"{}"'
-        ])
+            return [ImageFile(os.path.join(dirname, layer + '.png'))
+                    for layer in self.layers()]
 
 
 if __name__ == '__main__':
