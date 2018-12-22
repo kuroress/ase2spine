@@ -1,10 +1,12 @@
-import os
-import pytest
-from im2spine import AsepriteFile, SpineSkeleton
-from numpy.testing import assert_equal
-import tempfile
 import json
+import os
+import tempfile
+
 import imageio
+import pytest
+from numpy.testing import assert_equal
+
+from ase2spine import AsepriteFile, SpineSkeleton
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 

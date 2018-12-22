@@ -1,14 +1,13 @@
-import glob
-import json
-import sys
-
-import numpy as np
-import imageio
-from PIL import Image
 import copy
+import json
 import os
 import subprocess
+import sys
 import tempfile
+
+import imageio
+import numpy as np
+from PIL import Image
 
 
 class SpineImage:
