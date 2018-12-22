@@ -93,6 +93,9 @@ class NamedImage:
     def to_png(self, file_name):
         Image.fromarray(self.data).save(file_name + '.png')
 
+    def empty(self):
+        return not self.data.any()
+
 
 class AsepriteFile:
     def __init__(self, file_path):
@@ -103,7 +106,6 @@ class AsepriteFile:
             layer_file = os.path.join(dir_name, 'layers.txt')
             subprocess.call(['aseprite', '-b',
                              '--all-layers',
-                             '--ignore-empty',
                              '--list-layers', self.file_path,
                              '--data', layer_file],
                             stdout=subprocess.DEVNULL)
@@ -121,14 +123,14 @@ class AsepriteFile:
             subprocess.call([
                 'aseprite', '-b',
                 '--all-layers',
-                '--ignore-empty',
                 '--split-layers', self.file_path,
                 '--filename-format',
                 os.path.join(dir_name, '{tag}-{group}-{layer}.{extension}'),
                 '--save-as', '.png'
             ])
-            return [NamedImage(os.path.join(dir_name, tag + '-' + layer + '.png'))
-                    for layer in self.layers()]
+            images = [NamedImage(os.path.join(dir_name, tag + '-' + layer + '.png'))
+                      for layer in self.layers()]
+            return [im for im in images if not im.empty()]
 
 
 if __name__ == '__main__':
