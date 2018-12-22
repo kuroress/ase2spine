@@ -1,4 +1,5 @@
 import json
+import sys
 
 import numpy as np
 import imageio
@@ -125,3 +126,13 @@ class AsepriteFile:
 
             return [NamedImage(os.path.join(dirname, layer + '.png'))
                     for layer in self.layers()]
+
+
+if __name__ == '__main__':
+    src = sys.argv[1]
+    dst = sys.argv[2]
+
+    ase = AsepriteFile(src)
+    sk = SpineSkeleton(ase.images(), dst)
+    sk.to_json()
+    sk.to_png()
