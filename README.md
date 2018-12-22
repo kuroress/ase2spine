@@ -1,6 +1,5 @@
 # ase2spine
-
-Script to export a aseprite file as set of png files and a json to import from Spine for animation.
+Script to export a aseprite file as set of png files and a json, to import to Spine.
 
 ## Usage
 1. Create a source ase file by aseprite.
@@ -9,7 +8,7 @@ Script to export a aseprite file as set of png files and a json to import from S
 ```
 python ase2spine.py <source ase file> <aseprite tag> <dist dir>
 ```
-4. Import a json in the <dist dir> from Spine.
+4. Import a json in the <dist dir> to Spine.
 
 ## Example
 ```bash
